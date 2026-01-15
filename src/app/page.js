@@ -55,7 +55,7 @@ export default async function Home() {
             {/* Navigation removed for single-flow design */}
           </div>
         
-          {/* <Link href="/secure" className="px-6 py-2.5 bg-primary/10 text-primary font-medium rounded-full hover:bg-primary hover:text-white transition-all duration-300">
+          {/* <Link href="/order-secure" className="px-6 py-2.5 bg-primary/10 text-primary font-medium rounded-full hover:bg-primary hover:text-white transition-all duration-300">
             Order Products
           </Link> */}
         </div>

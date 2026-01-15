@@ -17,13 +17,35 @@ export default function SettingsPage() {
     contactName: "",
   });
 
+  // Admin credentials state
+  const [adminEmail, setAdminEmail] = useState("");
+  const [credentialsForm, setCredentialsForm] = useState({
+    currentPassword: "",
+    newEmail: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [credentialsSaving, setCredentialsSaving] = useState(false);
+  const [credentialsError, setCredentialsError] = useState("");
+  const [credentialsSaved, setCredentialsSaved] = useState(false);
+
   useEffect(() => {
     async function fetchSettings() {
       try {
-        const res = await fetch("/api/settings");
-        const data = await res.json();
-        if (data.success) {
-          setFormData(data.data);
+        const [settingsRes, credentialsRes] = await Promise.all([
+          fetch("/api/settings"),
+          fetch("/api/auth/credentials"),
+        ]);
+        
+        const settingsData = await settingsRes.json();
+        if (settingsData.success) {
+          setFormData(settingsData.data);
+        }
+
+        const credentialsData = await credentialsRes.json();
+        if (credentialsData.success) {
+          setAdminEmail(credentialsData.data.email);
+          setCredentialsForm(prev => ({ ...prev, newEmail: credentialsData.data.email }));
         }
       } catch (error) {
         console.error("Failed to fetch settings", error);
@@ -59,6 +81,49 @@ export default function SettingsPage() {
     }
   };
 
+  const handleCredentialsSubmit = async (e) => {
+    e.preventDefault();
+    setCredentialsError("");
+    setCredentialsSaved(false);
+
+    if (credentialsForm.newPassword && credentialsForm.newPassword !== credentialsForm.confirmPassword) {
+      setCredentialsError("New passwords do not match");
+      return;
+    }
+
+    if (!credentialsForm.currentPassword) {
+      setCredentialsError("Please enter your current password");
+      return;
+    }
+
+    setCredentialsSaving(true);
+
+    try {
+      const res = await fetch("/api/auth/credentials", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: credentialsForm.currentPassword,
+          newEmail: credentialsForm.newEmail !== adminEmail ? credentialsForm.newEmail : undefined,
+          newPassword: credentialsForm.newPassword || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCredentialsSaved(true);
+        setAdminEmail(credentialsForm.newEmail);
+        setCredentialsForm(prev => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
+        setTimeout(() => setCredentialsSaved(false), 3000);
+      } else {
+        setCredentialsError(data.error || "Failed to update credentials");
+      }
+    } catch (error) {
+      setCredentialsError("Failed to update credentials");
+    } finally {
+      setCredentialsSaving(false);
+    }
+  };
+
   if (loading) {
     return <div className="p-6 text-gray-500">Loading settings...</div>;
   }
@@ -67,9 +132,100 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-serif font-bold text-secondary">Settings</h1>
-        <p className="text-gray-500 mt-1">Manage your company details for invoices and order memos</p>
+        <p className="text-gray-500 mt-1">Manage your company details and admin credentials</p>
       </div>
 
+      {/* Admin Credentials Section */}
+      <form onSubmit={handleCredentialsSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div>
+          <h2 className="text-lg font-bold text-secondary mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-primary">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+            </svg>
+            Admin Credentials
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">Update your admin login email and password</p>
+          
+          {credentialsError && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 border border-red-100">
+              {credentialsError}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password *</label>
+              <input
+                type="password"
+                value={credentialsForm.currentPassword}
+                onChange={(e) => setCredentialsForm({ ...credentialsForm, currentPassword: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Enter current password to make changes"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Admin Email</label>
+              <input
+                type="email"
+                value={credentialsForm.newEmail}
+                onChange={(e) => setCredentialsForm({ ...credentialsForm, newEmail: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="admin@example.com"
+              />
+            </div>
+            <div></div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+              <input
+                type="password"
+                value={credentialsForm.newPassword}
+                onChange={(e) => setCredentialsForm({ ...credentialsForm, newPassword: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Leave blank to keep current"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+              <input
+                type="password"
+                value={credentialsForm.confirmPassword}
+                onChange={(e) => setCredentialsForm({ ...credentialsForm, confirmPassword: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Confirm new password"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+          <button
+            type="submit"
+            disabled={credentialsSaving}
+            className="px-6 py-2.5 bg-secondary text-white rounded-xl font-medium hover:bg-secondary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            {credentialsSaving ? (
+              <>Updating...</>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+                Update Credentials
+              </>
+            )}
+          </button>
+          {credentialsSaved && (
+            <span className="text-green-600 flex items-center gap-1 text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Credentials updated!
+            </span>
+          )}
+        </div>
+      </form>
+
+      {/* Company Details Form */}
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
         <div>
           <h2 className="text-lg font-bold text-secondary mb-4 flex items-center gap-2">
@@ -194,3 +350,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

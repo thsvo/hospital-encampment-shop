@@ -34,11 +34,11 @@ export default function AdminDashboard() {
   }
 
   // Calculate stats
-  const totalRevenue = orders.reduce((acc, order) => acc + order.total, 0);
+  const totalRevenue = orders.reduce((acc, order) => acc + (Number(order.total) || 0), 0);
   const totalCost = orders.reduce((acc, order) => {
     return acc + order.items.reduce((itemAcc, item) => {
       const product = products.find(p => p._id === item.productId);
-      return itemAcc + (product?.costPrice || 0) * item.quantity;
+      return itemAcc + (Number(product?.costPrice) || 0) * (Number(item.quantity) || 0);
     }, 0);
   }, 0);
   const totalProfit = totalRevenue - totalCost;
@@ -46,8 +46,8 @@ export default function AdminDashboard() {
   const lowStockProducts = products.filter(p => (p.stockQuantity || 0) <= (p.lowStockThreshold || 5));
   const outOfStockProducts = products.filter(p => (p.stockQuantity || 0) === 0);
   
-  const inventoryCostValue = products.reduce((acc, p) => acc + (p.costPrice || 0) * (p.stockQuantity || 0), 0);
-  const inventoryRetailValue = products.reduce((acc, p) => acc + p.price * (p.stockQuantity || 0), 0);
+  const inventoryCostValue = products.reduce((acc, p) => acc + (Number(p.costPrice) || 0) * (Number(p.stockQuantity) || 0), 0);
+  const inventoryRetailValue = products.reduce((acc, p) => acc + Number(p.price) * (Number(p.stockQuantity) || 0), 0);
 
   const recentOrders = orders.slice(0, 5);
 
@@ -67,9 +67,9 @@ export default function AdminDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
               </svg>
               {outOfStockProducts.length > 0 ? (
-                <span>{outOfStockProducts.length} out of stock • {lowStockProducts.length - outOfStockProducts.length} low stock</span>
+                <span>{outOfStockProducts.length.toLocaleString()} out of stock • {(lowStockProducts.length - outOfStockProducts.length).toLocaleString()} low stock</span>
               ) : (
-                <span>{lowStockProducts.length} products low on stock</span>
+                <span>{lowStockProducts.length.toLocaleString()} products low on stock</span>
               )}
             </div>
             <Link href="/admin/products" className="text-yellow-700 hover:underline text-sm">View All →</Link>
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-[10px] md:text-xs text-gray-500 uppercase">Products</p>
-              <p className="text-lg md:text-2xl font-bold text-secondary">{products.length}</p>
+              <p className="text-lg md:text-2xl font-bold text-secondary">{products.length.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-[10px] md:text-xs text-gray-500 uppercase">Orders</p>
-              <p className="text-lg md:text-2xl font-bold text-secondary">{orders.length}</p>
+              <p className="text-lg md:text-2xl font-bold text-secondary">{orders.length.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -165,19 +165,19 @@ export default function AdminDashboard() {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-gray-500">Total Products</span>
-              <span className="font-bold">{products.length}</span>
+              <span className="font-bold">{products.length.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-500">In Stock</span>
-              <span className="font-bold text-green-600">{products.length - lowStockProducts.length}</span>
+              <span className="font-bold text-green-600">{(products.length - lowStockProducts.length).toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-500">Low Stock</span>
-              <span className="font-bold text-yellow-600">{lowStockProducts.length - outOfStockProducts.length}</span>
+              <span className="font-bold text-yellow-600">{(lowStockProducts.length - outOfStockProducts.length).toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center pt-3 border-t border-gray-100">
               <span className="text-gray-500">Out of Stock</span>
-              <span className="font-bold text-red-600">{outOfStockProducts.length}</span>
+              <span className="font-bold text-red-600">{outOfStockProducts.length.toLocaleString()}</span>
             </div>
           </div>
         </div>

@@ -31,7 +31,7 @@ const SiteContentSchema = new mongoose.Schema({
   },
   heroCtaLink: {
     type: String,
-    default: '/secure',
+    default: '/order-secure',
   },
   heroImageCaption: {
     type: String,

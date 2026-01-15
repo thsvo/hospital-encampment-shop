@@ -194,8 +194,8 @@ export default function OrderPrintPage() {
                 <td>[{(index + 1).toString().padStart(8, '0')}]</td>
                 <td style={{ fontWeight: 500 }}>{item.name}</td>
                 <td>{item.quantity}</td>
-                <td>{(item.price / item.quantity).toFixed(2)}</td>
-                <td style={{ fontWeight: 500 }}>{item.price.toFixed(2)}</td>
+                <td>{Number(item.price / item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td style={{ fontWeight: 500 }}>{Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
               </tr>
             ))}
           </tbody>
@@ -209,11 +209,11 @@ export default function OrderPrintPage() {
           <div>
             <table className="totals" style={{ width: '100%' }}>
               <tbody>
-                <tr><td>SUBTOTAL</td><td>{(order.subtotal || order.total - (order.shippingCost || 0)).toFixed(2)}</td></tr>
+                <tr><td>SUBTOTAL</td><td>{Number(order.subtotal || order.total - (order.shippingCost || 0)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
                 <tr><td>TAX</td><td></td></tr>
-                <tr><td>SHIPPING</td><td>{(order.shippingCost || 0).toFixed(2)}</td></tr>
+                <tr><td>SHIPPING</td><td>{Number(order.shippingCost || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
                 <tr><td>OTHER</td><td></td></tr>
-                <tr className="total-row"><td>TOTAL</td><td>$ {order.total.toFixed(2)}</td></tr>
+                <tr className="total-row"><td>TOTAL</td><td>$ {Number(order.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
               </tbody>
             </table>
           </div>

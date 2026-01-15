@@ -143,7 +143,7 @@ export default function AdminLayout({ children }) {
               </svg>
             </button>
             <div className="flex items-center gap-4">
-              <Link href="/secure" className="text-sm text-primary hover:underline">View Secure Page →</Link>
+              <Link href="/order-secure" className="text-sm text-primary hover:underline">View Secure Page →</Link>
             </div>
           </div>
         </header>

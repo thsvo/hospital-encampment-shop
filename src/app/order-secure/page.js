@@ -552,6 +552,17 @@ export default function SecurePage() {
           </>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-100 py-6 px-6 mt-12">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+          <p>© {new Date().getFullYear()} BioVibe Peptides. All Rights Reserved.</p>
+          <div className="flex items-center gap-6">
+            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
